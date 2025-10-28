@@ -1,0 +1,31 @@
+name: Simple Play Store Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Build Release APK
+      run: |
+        chmod +x gradlew
+        ./gradlew assembleRelease
+    
+    - name: Deploy to Play Store (Internal Track)
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        packageName: com.example.myapplication
+        releaseFiles: app/build/outputs/apk/release/app-release.apk
+        track: internal
+        status: completed
